@@ -1,0 +1,13 @@
+package:
+  name: armory
+  version: v0.1.0
+  authors:
+    - author: 
+      email: 
+      organization: 
+  license: MIT
+  dependencies:
+    chaos.core:
+      repository: github.com/chaos-io/core/go
+      version: v0.0.0-20251009072706-721cc34b146d
+  repository: github.com/liankui/OpenBambuAPI/armory

@@ -1,0 +1,258 @@
+syntax = "proto3";
+
+package armory.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "github.com/liankui/OpenBambuAPI/armory/go/armory/v1;armory";
+
+service Armory {
+  /* ---------- Auth ---------- */
+
+  rpc Login(LoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post: "/v1/user-service/user/login"
+      body: "*"
+    };
+  }
+
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {
+    option (google.api.http) = {
+      post: "/v1/user-service/user/refreshtoken"
+      body: "*"
+    };
+  }
+
+  /* ---------- Messages ---------- */
+
+  rpc ListMyMessages(ListMyMessagesRequest)
+      returns (ListMyMessagesResponse) {
+    option (google.api.http) = {
+      get: "/v1/user-service/my/messages"
+    };
+  }
+
+  /* ---------- Tasks ---------- */
+
+  rpc ListMyTasks(ListMyTasksRequest)
+      returns (ListMyTasksResponse) {
+    option (google.api.http) = {
+      get: "/v1/user-service/my/tasks"
+    };
+  }
+
+  /* ---------- Slicer ---------- */
+
+  rpc GetSlicerResources(GetSlicerResourcesRequest)
+      returns (GetSlicerResourcesResponse) {
+    option (google.api.http) = {
+      get: "/v1/iot-service/api/slicer/resource"
+    };
+  }
+
+  /* ---------- Device ---------- */
+
+  rpc ListUserDevices(ListUserDevicesRequest)
+      returns (ListUserDevicesResponse) {
+    option (google.api.http) = {
+      get: "/v1/iot-service/api/user/bind"
+    };
+  }
+
+  rpc GetPrintStatus(GetPrintStatusRequest)
+      returns (GetPrintStatusResponse) {
+    option (google.api.http) = {
+      get: "/v1/iot-service/api/user/print"
+    };
+  }
+
+  /* ---------- TTCode ---------- */
+
+  rpc GetTTCode(GetTTCodeRequest)
+      returns (GetTTCodeResponse) {
+    option (google.api.http) = {
+      post: "/v1/iot-service/api/user/ttcode"
+      body: "*"
+    };
+  }
+}
+
+message BaseResponse {
+  string message = 1;
+  int32 code = 2;
+  string error = 3;
+}
+
+/* =======================
+ * Auth
+ * ======================= */
+
+message LoginRequest {
+  string account = 1;
+  string password = 2;
+  string code = 3;
+}
+
+message LoginResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  string login_type = 3;
+  int64 expires_in = 4;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 expires_in = 3;
+  int64 refresh_expires_in = 4;
+}
+
+/* =======================
+ * Messages
+ * ======================= */
+
+message ListMyMessagesRequest {
+  int32 type = 1;
+  string after = 2;
+  int32 limit = 3;
+}
+
+message ListMyMessagesResponse {
+  repeated UserMessage hits = 1;
+}
+
+message UserMessage {
+  int64 id = 1;
+  int32 type = 2;
+  TaskMessage task_message = 3;
+  MessageUser from = 4;
+  string create_time = 5;
+}
+
+message TaskMessage {
+  int64 id = 1;
+  string title = 2;
+  string cover = 3;
+  int32 status = 4;
+  string device_id = 5;
+}
+
+message MessageUser {
+  int64 uid = 1;
+  string name = 2;
+  string avatar = 3;
+  bool is_followed = 4;
+}
+
+/* =======================
+ * Tasks
+ * ======================= */
+
+message ListMyTasksRequest {
+  string device_id = 1;
+  string after = 2;
+  int32 limit = 3;
+}
+
+message ListMyTasksResponse {
+  int32 total = 1;
+  repeated PrintTask hits = 2;
+}
+
+message PrintTask {
+  int64 id = 1;
+  string model_id = 2;
+  string title = 3;
+  string cover = 4;
+  int32 status = 5;
+  string start_time = 6;
+  string end_time = 7;
+  double weight = 8;
+  int64 cost_time = 9;
+  string device_id = 10;
+  string mode = 11;
+}
+
+/* =======================
+ * Slicer
+ * ======================= */
+
+message GetSlicerResourcesRequest {
+  string type = 1;
+}
+
+message GetSlicerResourcesResponse {
+  BaseResponse base = 1;
+  Software software = 2;
+  repeated Resource resources = 3;
+}
+
+message Software {
+  string version = 1;
+  string description = 2;
+  string url = 3;
+  bool force_update = 4;
+}
+
+message Resource {
+  string type = 1;
+  string version = 2;
+  string description = 3;
+  string url = 4;
+  bool force_update = 5;
+}
+
+/* =======================
+ * Device
+ * ======================= */
+
+message ListUserDevicesRequest {}
+
+message ListUserDevicesResponse {
+  BaseResponse base = 1;
+  repeated Device devices = 2;
+}
+
+message Device {
+  string dev_id = 1;
+  string name = 2;
+  bool online = 3;
+  string dev_model_name = 4;
+  string dev_product_name = 5;
+}
+
+message GetPrintStatusRequest {
+  bool force = 1;
+}
+
+message GetPrintStatusResponse {
+  BaseResponse base = 1;
+  repeated PrintDeviceStatus devices = 2;
+}
+
+message PrintDeviceStatus {
+  string dev_id = 1;
+  string dev_name = 2;
+  bool dev_online = 3;
+  int32 progress = 4;
+  string task_id = 5;
+}
+
+/* =======================
+ * TTCode
+ * ======================= */
+
+message GetTTCodeRequest {
+  string dev_id = 1;
+}
+
+message GetTTCodeResponse {
+  BaseResponse base = 1;
+  string ttcode = 2;
+  string passwd = 3;
+  string authkey = 4;
+}

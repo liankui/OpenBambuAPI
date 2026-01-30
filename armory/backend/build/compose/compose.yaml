@@ -1,0 +1,50 @@
+networks:
+  armory-network:
+    driver: bridge
+
+services:
+  armory-mysql:
+    image: ${IMAGE_PREFIX}mysql:5.7.37
+    restart: always
+    ports:
+      - "3306:3306"
+    volumes:
+      - ${SERVER_INSTALL_PATH}/armory-mysql/data:/var/lib/mysql
+      - ${SERVER_INSTALL_PATH}/armory-mysql/config:/etc/mysql/
+      - ${SERVER_INSTALL_PATH}/armory-mysql/logs:/logs
+    environment:
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_ROOT_PASSWORD: "root@ROOT"
+      MYSQL_USER: "armory"
+      MYSQL_PASSWORD: "armory"
+      MYSQL_DATABASE: "armory"
+      TZ: Asia/Shanghai
+    container_name: armory-mysql
+
+  armory-redis:
+    image: ${IMAGE_PREFIX}redis:7.4.2
+    restart: always
+    networks:
+      - armory-network
+    ports:
+      - "6379:6379"
+    volumes:
+      - ${SERVER_INSTALL_PATH}/armory-redis/data:/data
+      - ${SERVER_INSTALL_PATH}/armory-redis/config/redis.conf:/etc/redis/redis.conf
+    container_name: armory-redis
+    command: [ "redis-server", "/etc/redis/redis.conf", "--requirepass", "armory" ]
+
+  armory-server:
+    image: ${IMAGE_PREFIX}armory-server:latest
+    restart: always
+    ports:
+      - "21101:21101"
+      - "21102:21102"
+      - "21103:21103"
+    networks:
+      - armory-network
+    volumes:
+      - ${SERVER_INSTALL_PATH}/armory/armory-server:/logs
+      - ${SERVER_INSTALL_PATH}/armory/configs:/configs
+      - /var/run/docker.sock:/var/run/docker.sock
+    container_name: armory-server
